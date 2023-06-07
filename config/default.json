@@ -1,0 +1,21 @@
+{
+  "dbConfig": {
+    "dbConfig": {
+      "host": "jackmarket.kz",
+      "port": "3306",
+      "user": "ordermanager",
+      "password": "localhosttrigger122",
+      "database": "omanager"
+    },
+    "dbConfigProd": {
+      "host": "127.0.0.1",
+      "port": "3306",
+      "user": "ordermanager",
+      "password": "localhosttrigger122",
+      "database": "omanager"
+    }
+  },
+  "kaspiConfig": {
+    "kaspi_url": "http://194.187.245.10"
+  }
+}
