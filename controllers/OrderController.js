@@ -335,11 +335,19 @@ export const getDelivers = async (req, res) => {
         })
       );
     }
+    const filteredResult = result.filter((item) => {
+      if (item === null || item === undefined) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+
     await conn.end();
     if (noDelivers) {
       return res.send([]);
     }
-    res.send(result);
+    res.send(filteredResult);
   } catch (e) {
     res.status(500).json({ message: "Ошибка сервера: " + e });
   }
