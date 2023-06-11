@@ -93,7 +93,7 @@ export const createNewOrder = async (req, res) => {
             order.relationships.entries.links.related
           );
           const address = order.attributes.deliveryAddress?.formattedAddress;
-          await conn.query(`INSERT INTO orders SET ?`, {
+          await conn.query(`INSERT INTO o_${store} SET ?`, {
             uid,
             goods,
             address: address ? address : `Самовывоз. ${pickupAdress}.`,
