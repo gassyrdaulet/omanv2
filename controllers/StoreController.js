@@ -19,6 +19,7 @@ export const getStoreInfo = async (req, res) => {
     const sql = `SELECT * FROM stores WHERE uid = '${store}'`;
     const result = (await conn.query(sql))[0][0];
     result.owner = (await getNameByUID(user_uid)) + ` (${user_uid})`;
+    await conn.end();
     return res.send(result);
   } catch (e) {
     res.status(500).json({ message: "Ошибка сервера: " + e });
@@ -47,6 +48,7 @@ export const getStoreUsers = async (req, res) => {
         return item;
       })
     );
+    await conn.end();
     return res.send(resultWithNames);
   } catch (e) {
     res.status(500).json({ message: "Ошибка сервера: " + e });
@@ -210,6 +212,7 @@ export const checkStore = async (req, res) => {
           break;
         }
       }
+      await conn.end();
       return res.status(200).json({ isNoStore: false, role: user.role });
     } else {
       return res.status(400).json({ isNoStore: true });

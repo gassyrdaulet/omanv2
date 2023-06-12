@@ -31,7 +31,8 @@ export const createNewOrder = async (req, res) => {
       comment,
       order_code,
     } = req.body;
-    const { id, user_uid, isStoreActive, isStorePremium } = req.user;
+    const { id, user_uid, isStoreActive, isStorePremium, pickupAdress } =
+      req.user;
     const errors = validationResult(req);
     const userDataSql = `SELECT * FROM users WHERE id = '${id}'`;
     const user = (await conn.query(userDataSql))[0][0];
@@ -445,9 +446,11 @@ export const processOrder = async (req, res) => {
       } else if (operation === "finish") {
         finalStatus = "PRFNSH";
       } else if (operation === "recreate") {
-        const sql2 = `UPDATE o_${store} SET status = "PRCANC" WHERE uid = "${uid}"`;
+        const sql2 = `UPDATE o_${store} SET status = "PRCANC" and ? WHERE uid = "${uid}"`;
         const sql3 = `INSERT INTO o_${store} SET ?, status = "NEW"`;
-        await conn.query(sql2);
+        await conn.query(sql2, {
+          finished_date: new Date(),
+        });
         const checkForUniqueOrderId = async () => {
           const nanoid = customAlphabet("1234567890", 8);
           const order_uid = nanoid();

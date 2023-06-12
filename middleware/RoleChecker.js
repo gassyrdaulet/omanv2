@@ -23,6 +23,7 @@ export const roles = async (req, res, next) => {
     if (store?.id) {
       req.user.isStoreActive = store.activated;
       req.user.isStorePremium = store.premium;
+      req.user.pickupAdress = store.address;
       req.user.store = user.store;
       if (store.owner === user.uid) {
         req.user.isOwner = true;
@@ -36,6 +37,7 @@ export const roles = async (req, res, next) => {
           break;
         }
       }
+      await conn.end();
       next();
     } else {
       return res.status(400).json({
