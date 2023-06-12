@@ -202,6 +202,20 @@ export const editOrder = async (req, res) => {
   }
 };
 
+// export const editOrderOptimized = async (req, res) => {
+//   mysql
+//     .createConnection(production ? dataBaseConfigProduction : dataBaseConfig)
+//     .then(async (res) => {
+//       const conn = res.connection;
+//       const test = (
+//         await conn.query(`SELECT * FROM users where id IN(10,11,12,15,18)`)
+//       )[0];
+//       console.log(test);
+//     });
+// };
+
+// editOrderOptimized();
+
 export const getAllOrders = async (req, res) => {
   try {
     const { status } = req.body;
@@ -483,9 +497,8 @@ export const processOrder = async (req, res) => {
         await conn.end();
         return res.status(200).json({ message: `(${uid})` });
       }
-      const sql6 = `UPDATE o_${store} SET ? WHERE uid = "${uid}"`;
+      const sql6 = `UPDATE o_${store} SET status = "${finalStatus}", ? WHERE uid = "${uid}"`;
       await conn.query(sql6, {
-        status: finalStatus,
         finished_date: new Date(),
       });
       await conn.end();
