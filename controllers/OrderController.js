@@ -460,7 +460,7 @@ export const processOrder = async (req, res) => {
       } else if (operation === "finish") {
         finalStatus = "PRFNSH";
       } else if (operation === "recreate") {
-        const sql2 = `UPDATE o_${store} SET status = "PRCANC" and ? WHERE uid = "${uid}"`;
+        const sql2 = `UPDATE o_${store} SET status = "PRCANC", ? WHERE uid = "${uid}"`;
         const sql3 = `INSERT INTO o_${store} SET ?, status = "NEW"`;
         await conn.query(sql2, {
           finished_date: new Date(),
