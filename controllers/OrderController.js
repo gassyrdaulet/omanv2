@@ -170,11 +170,9 @@ export const editOrder = async (req, res) => {
       comment,
       order_code,
     } = req.body;
-    const { id, role } = req.user;
-    const userDataSql = `SELECT * FROM users WHERE id = '${id}'`;
-    const user = (await conn.query(userDataSql))[0][0];
-    const { store } = user;
+    const { role, store } = req.user;
     if (role !== "admin") {
+      await conn.end();
       return res.status(403).json({ message: "Отказано в доступе!" });
     }
     const errors = validationResult(req);
@@ -194,27 +192,14 @@ export const editOrder = async (req, res) => {
       comment,
       order_code,
     });
+    conn.end();
     return res.status(200).json({
-      message: "Заказ успешно отредатирован!",
+      message: "Заказ успешно отредактирован!",
     });
   } catch (e) {
     res.status(500).json({ message: "Ошибка сервера: " + e });
   }
 };
-
-// export const editOrderOptimized = async (req, res) => {
-//   mysql
-//     .createConnection(production ? dataBaseConfigProduction : dataBaseConfig)
-//     .then(async (res) => {
-//       const conn = res.connection;
-//       const test = (
-//         await conn.query(`SELECT * FROM users where id IN(10,11,12,15,18)`)
-//       )[0];
-//       console.log(test);
-//     });
-// };
-
-// editOrderOptimized();
 
 export const getAllOrders = async (req, res) => {
   try {

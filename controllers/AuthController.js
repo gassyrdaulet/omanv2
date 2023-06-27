@@ -331,6 +331,10 @@ export const getUserInfo = async (req, res) => {
         store: user.store,
         token: user.kaspi_token,
         notifications: user.notifications,
+        kaspimerlogin: user.kaspimerlogin,
+        kaspimerpassword: user.kaspimerpassword,
+        kaspipaylogin: user.kaspipaylogin,
+        kaspipaypassword: user.kaspipaypassword,
       },
     });
     conn.end();
@@ -361,7 +365,14 @@ export const editAccount = async (req, res) => {
   try {
     const { id } = req.user;
     const errors = validationResult(req);
-    const { name, kaspi_token } = req.body;
+    const {
+      name,
+      kaspi_token,
+      kaspimerlogin,
+      kaspimerpassword,
+      kaspipaylogin,
+      kaspipaypassword,
+    } = req.body;
     const sql = `SELECT * FROM users WHERE id = ${id}`;
     const sql2 = `UPDATE users SET ? WHERE id = ${id}`;
     if (!errors.isEmpty()) {
@@ -377,7 +388,14 @@ export const editAccount = async (req, res) => {
         message: `Ошибка! Пользователя с ID = "${id}" не существует.`,
       });
     }
-    await conn.query(sql2, { name, kaspi_token });
+    await conn.query(sql2, {
+      name,
+      kaspi_token,
+      kaspimerlogin,
+      kaspimerpassword,
+      kaspipaylogin,
+      kaspipaypassword,
+    });
     res.status(200).json({ message: "Аккаунт успешно обновлен." });
     conn.end();
   } catch (e) {
