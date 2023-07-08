@@ -102,6 +102,7 @@ export const createNewOrder = async (req, res) => {
             cellphone: "+7" + order.attributes.customer?.cellPhone,
             is_pickup: (order.attributes.state === "PICKUP") + "",
             delivery_price_for_customer: 0,
+            delivery_price_for_deliver: 0,
             sum: order.attributes.totalPrice,
             status: "NEW",
             // order.attributes.creationDate
