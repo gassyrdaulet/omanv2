@@ -476,6 +476,7 @@ export const processOrder = async (req, res) => {
           cellphone: order.cellphone,
           is_pickup: order.is_pickup,
           delivery_price_for_customer: order.delivery_price_for_customer,
+          delivery_price_for_deliver: order.delivery_price_for_deliver,
           sum: order.sum,
           creation_date: new Date(),
           manager: order.manager,
