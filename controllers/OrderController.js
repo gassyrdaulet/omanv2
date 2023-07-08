@@ -483,8 +483,9 @@ export const processOrder = async (req, res) => {
           is_kaspi: order.is_kaspi,
           comment:
             order.comment +
-            ` [ПЕРЕСОЗДАН в ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}]` +
-            new Date(),
+            ` [ПЕРЕСОЗДАН в ${new Date().toLocaleDateString(
+              "ru-RU"
+            )} ${new Date().toLocaleTimeString("ru-RU")}]`,
           order_code: order.order_code,
           order_id: order?.order_id ? order.order_id : "",
         });
