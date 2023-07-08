@@ -95,7 +95,11 @@ router.post(
     ),
     check(
       "deliveryPrice",
-      "Неверный формат числа у поля стоимости доставки."
+      "Неверный формат числа у поля стоимости доставки для клиента."
+    ).custom((value) => !isNaN(value)),
+    check(
+      "deliveryPriceForDeliver",
+      "Неверный формат числа у поля стоимости доставки для курьера."
     ).custom((value) => !isNaN(value)),
     check(
       "deliveryPrice",
