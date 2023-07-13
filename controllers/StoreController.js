@@ -131,20 +131,11 @@ export const editStoreUsers = async (req, res) => {
       await conn.end();
       return res.status(403).json({ message: `Отказано в доступе!` });
     }
-    editUid === user_uid;
     if (role === "admin" && !userSettings.admin && editUid === user_uid) {
       await conn.end();
       return res.status(403).json({
         message: `Ошибка! Нельзя понизить свою же роль! `,
       });
-    }
-    if (userSettings.admin) {
-      if (!isOwner) {
-        await conn.end();
-        return res.status(403).json({
-          message: `Отказано в доступе! Только владельцы могут назначать админов! `,
-        });
-      }
     }
     const userDataSql = `SELECT * FROM users WHERE uid = '${editUid}'`;
     const user = (await conn.query(userDataSql))[0][0];
@@ -156,6 +147,23 @@ export const editStoreUsers = async (req, res) => {
     }
     const storeDataSql = `SELECT owner,users FROM stores WHERE uid = '${store}'`;
     const storeData = (await conn.query(storeDataSql))[0][0];
+    if (userSettings.admin) {
+      let exInfo = {};
+      for (let i = 0; i < storeData.users.length; i++) {
+        if (storeData.users[i].uid === editUid) {
+          exInfo = storeData.users[i];
+          break;
+        }
+      }
+      if (exInfo.role !== "admin") {
+        if (!isOwner) {
+          await conn.end();
+          return res.status(403).json({
+            message: `Отказано в доступе! Только владельцы могут назначать админов! `,
+          });
+        }
+      }
+    }
     if (
       storeData.owner === user_uid &&
       !userSettings.admin &&
