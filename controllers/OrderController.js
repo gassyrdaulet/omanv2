@@ -438,8 +438,7 @@ export const processOrder = async (req, res) => {
         return res.status(403).json({ message: "Отказано в доступе!" });
       }
     }
-
-    if (order.status === "INDLVR") {
+    if (order.status === "INDLVR" && operation !== "recreate") {
       let finalStatus = "";
       if (operation === "cancel") {
         if (role !== "admin") {
@@ -449,48 +448,6 @@ export const processOrder = async (req, res) => {
         finalStatus = "PRCANC";
       } else if (operation === "finish") {
         finalStatus = "PRFNSH";
-      } else if (operation === "recreate") {
-        const sql2 = `UPDATE o_${store} SET status = "PRCANC", ? WHERE uid = "${uid}"`;
-        const sql3 = `INSERT INTO o_${store} SET ?, status = "NEW"`;
-        await conn.query(sql2, {
-          finished_date: new Date(),
-        });
-        const checkForUniqueOrderId = async () => {
-          const nanoid = customAlphabet("1234567890", 8);
-          const order_uid = nanoid();
-          const sql4 = `SELECT * FROM o_${store} WHERE uid = '${order_uid}'`;
-          const sql5 = `SELECT * FROM f_${store} WHERE uid = '${order_uid}'`;
-          const order_candidate = (await conn.query(sql4))[0][0];
-          const finished_order_candidate = (await conn.query(sql5))[0][0];
-          if (order_candidate || finished_order_candidate) {
-            return await checkForUniqueOrderId();
-          } else {
-            return order_uid;
-          }
-        };
-        const new_uid = await checkForUniqueOrderId();
-        await conn.query(sql3, {
-          uid: new_uid,
-          goods: order.goods,
-          address: order.address,
-          cellphone: order.cellphone,
-          is_pickup: order.is_pickup,
-          delivery_price_for_customer: order.delivery_price_for_customer,
-          delivery_price_for_deliver: order.delivery_price_for_deliver,
-          sum: order.sum,
-          creation_date: new Date(),
-          manager: order.manager,
-          is_kaspi: order.is_kaspi,
-          comment:
-            order.comment +
-            ` [ПЕРЕСОЗДАН в ${new Date().toLocaleDateString(
-              "ru-RU"
-            )} ${new Date().toLocaleTimeString("ru-RU")}]`,
-          order_code: order.order_code,
-          order_id: order?.order_id ? order.order_id : "",
-        });
-        await conn.end();
-        return res.status(200).json({ message: `(${uid})` });
       }
       const sql6 = `UPDATE o_${store} SET status = "${finalStatus}", ? WHERE uid = "${uid}"`;
       await conn.query(sql6, {
@@ -503,6 +460,57 @@ export const processOrder = async (req, res) => {
     if (role !== "admin") {
       await conn.end();
       return res.status(403).json({ message: "Отказано в доступе!" });
+    }
+
+    if (operation === "recreate") {
+      const sql1 = `DELETE FROM o_${store} WHERE uid = "${uid}"`;
+      const sql2 = `UPDATE o_${store} SET status = "PRCANC", ? WHERE uid = "${uid}"`;
+      const sql3 = `INSERT INTO o_${store} SET ?, status = "NEW"`;
+      if (order.status === "INDLVR") {
+        await conn.query(sql2, {
+          finished_date: new Date(),
+        });
+      }
+      if (order.status === "PRFNSH") {
+        await conn.query(sql1);
+      }
+      const checkForUniqueOrderId = async () => {
+        const nanoid = customAlphabet("1234567890", 8);
+        const order_uid = nanoid();
+        const sql4 = `SELECT * FROM o_${store} WHERE uid = '${order_uid}'`;
+        const sql5 = `SELECT * FROM f_${store} WHERE uid = '${order_uid}'`;
+        const order_candidate = (await conn.query(sql4))[0][0];
+        const finished_order_candidate = (await conn.query(sql5))[0][0];
+        if (order_candidate || finished_order_candidate) {
+          return await checkForUniqueOrderId();
+        } else {
+          return order_uid;
+        }
+      };
+      const new_uid = await checkForUniqueOrderId();
+      const deliverName = await getNameByUID(order.deliver);
+      await conn.query(sql3, {
+        uid: new_uid,
+        goods: order.goods,
+        address: order.address,
+        cellphone: order.cellphone,
+        is_pickup: order.is_pickup,
+        delivery_price_for_customer: order.delivery_price_for_customer,
+        delivery_price_for_deliver: order.delivery_price_for_deliver,
+        sum: order.sum,
+        creation_date: order.creation_date,
+        manager: order.manager,
+        is_kaspi: order.is_kaspi,
+        comment:
+          order.comment +
+          ` [ПЕРЕСОЗДАН ${deliverName} в ${new Date().toLocaleDateString(
+            "ru-RU"
+          )} ${new Date().toLocaleTimeString("ru-RU")}]`,
+        order_code: order.order_code,
+        order_id: order?.order_id ? order.order_id : "",
+      });
+      await conn.end();
+      return res.status(200).json({ message: `(${uid})` });
     }
 
     if (order.status === "INPICKUP") {
