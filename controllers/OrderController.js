@@ -457,12 +457,13 @@ export const processOrder = async (req, res) => {
       return res.status(200).json({ message: `(${uid})` });
     }
 
-    if (role !== "admin") {
-      await conn.end();
-      return res.status(403).json({ message: "Отказано в доступе!" });
-    }
-
     if (operation === "recreate") {
+      if (role !== "admin") {
+        if (user_uid !== order.deliver) {
+          await conn.end();
+          return res.status(403).json({ message: "Отказано в доступе!" });
+        }
+      }
       const sql1 = `DELETE FROM o_${store} WHERE uid = "${uid}"`;
       const sql2 = `UPDATE o_${store} SET status = "PRCANC", ? WHERE uid = "${uid}"`;
       const sql3 = `INSERT INTO o_${store} SET ?, status = "NEW"`;
@@ -511,6 +512,11 @@ export const processOrder = async (req, res) => {
       });
       await conn.end();
       return res.status(200).json({ message: `(${uid})` });
+    }
+
+    if (role !== "admin") {
+      await conn.end();
+      return res.status(403).json({ message: "Отказано в доступе!" });
     }
 
     if (order.status === "INPICKUP") {
